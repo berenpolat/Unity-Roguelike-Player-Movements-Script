@@ -1,0 +1,61 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerMovements : MonoBehaviour
+{
+    public float moveSpeed = 5f; // The speed at which the player moves
+    public float jumpForce = 10f; // The force with which the player jumps
+    public float groundCheckRadius = 0.2f; // The radius of the ground check circle
+    public LayerMask groundLayer; // The layer(s) that represent the ground
+
+    private Rigidbody2D rb; // Reference to the player's rigidbody component
+    private bool isGrounded; // Whether or not the player is touching the ground
+    private Animator animator; // Reference to the player's animator component
+
+    //public GameObject player;
+
+    private void Start()
+    {
+        // Get the player's rigidbody and animator components
+        rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+    }
+
+    private void Update()
+    {
+        // Check if the player is grounded
+        isGrounded = Physics2D.OverlapCircle(transform.position, groundCheckRadius, groundLayer);
+
+        // Get the horizontal and vertical input axes
+        float horizontalInput = Input.GetAxisRaw("Horizontal");
+        float verticalInput = Input.GetAxisRaw("Vertical");
+
+        // Create a movement vector based on the input axes and move speed
+        Vector2 movement = new Vector2(horizontalInput, verticalInput).normalized * moveSpeed;
+
+        // Set the animator parameters based on the movement direction
+        if (movement.magnitude > 0)
+        {
+            animator.SetFloat("Horizontal", movement.x);
+            animator.SetFloat("Vertical", movement.y);
+        }
+        if (movement.x <0)
+        {
+            gameObject.transform.localScale = new Vector3((float)-0.4,(float)0.4,1);
+        }
+        if (movement.x>0)
+        {
+            gameObject.transform.localScale = new Vector3((float)0.4, (float)0.4, 1);
+        }
+
+        // Move the player using the rigidbody
+        rb.velocity = movement;
+
+        // If the player is grounded and the jump button is pressed, jump
+        if (isGrounded && Input.GetButtonDown("Jump"))
+        {
+            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+        }
+    }
+}
